@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TinyLink Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fafafa;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background: black;
+      color: white;
+    }
+    input {
+      padding: 10px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>TinyLink Admin Dashboard</h1>
+
+  <div>
+    <input id="urlInput" type="text" placeholder="Enter URL..." />
+    <button onclick="createLink()">Create Short Link</button>
+  </div>
+
+  <h2>All Short Links</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>URL</th>
+        <th>Clicks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="linksTable"></tbody>
+  </table>
+
+  <script>
+    const API = "http://localhost:3000";
+
+    async function loadLinks() {
+      const res = await fetch(`${API}/api/links`);
+      const data = await res.json();
+      const table = document.getElementById('linksTable');
+      table.innerHTML = "";
+
+      data.forEach(item => {
+        const shortUrl = `${API}/${item.code}`;
+
+        table.innerHTML += `
+          <tr>
+            <td>${item.code}</td>
+            <td>${item.url}</td>
+            <td>${item.clicks}</td>
+            <td>
+              <button onclick="copyLink('${shortUrl}')">Copy</button>
+              <button onclick="deleteLink('${item.code}')">Delete</button>
+              <button onclick="viewStats('${item.code}')">Stats</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function createLink() {
+      const url = document.getElementById("urlInput").value;
+      if (!url.trim()) return alert("Enter URL!");
+
+      const res = await fetch(`${API}/api/links`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+      alert("Created: " + API + "/" + data.code);
+      loadLinks();
+    }
+
+    async function deleteLink(code) {
+      await fetch(`${API}/api/links/${code}`, { method: "DELETE" });
+      loadLinks();
+    }
+
+    function viewStats(code) {
+      window.location.href = `/stats.html?code=${code}`;
+    }
+
+    function copyLink(url) {
+      navigator.clipboard.writeText(url);
+      alert("Copied: " + url);
+    }
+
+    loadLinks();
+  </script>
+</body>
+</html>

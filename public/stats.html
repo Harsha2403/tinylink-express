@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TinyLink Stats</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    .card {
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px #ddd;
+    }
+    button {
+      padding: 10px 14px;
+      border: none;
+      background: black;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Link Stats</h1>
+  <div class="card" id="statsBox">Loading...</div>
+  <br />
+  <button onclick="window.location.href='/'">Back to Dashboard</button>
+
+  <script>
+    const API = "http://localhost:3000";
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    async function loadStats() {
+      const res = await fetch(`${API}/api/links/${code}`);
+      const data = await res.json();
+      document.getElementById('statsBox').innerHTML = `
+        <p><strong>Code:</strong> ${data.code}</p>
+        <p><strong>URL:</strong> ${data.url}</p>
+        <p><strong>Clicks:</strong> ${data.clicks}</p>
+        <p><strong>Created:</strong> ${data.created_at}</p>
+        <p><strong>Last Clicked:</strong> ${data.last_clicked ?? "Never"}</p>
+      `;
+    }
+
+    loadStats();
+  </script>
+
+</body>
+</html>
